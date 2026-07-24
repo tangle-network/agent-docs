@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { check, write } from '../src/index.mjs'
+import { check, write } from './index'
 
 const HELP = `cartograph — deterministic repo surface + dependency map for any TypeScript package.
 
@@ -16,8 +16,16 @@ Options:
 Entry points are auto-detected: cartograph.config > tsup.config \`entry\` > package.json \`exports\` > src/index.
 The deterministic files are what --check gates on; the DeepWiki WIKI.md is a non-authoritative reading aid and is never gated.`
 
-function parseArgs(argv) {
-  const args = { repo: process.cwd(), check: false, deepwiki: false, out: undefined, help: false }
+interface Args {
+  repo: string
+  check: boolean
+  deepwiki: boolean
+  out?: string
+  help: boolean
+}
+
+function parseArgs(argv: string[]): Args {
+  const args: Args = { repo: process.cwd(), check: false, deepwiki: false, help: false }
   const rest = argv.slice(2)
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i]
@@ -66,6 +74,6 @@ try {
     else console.log('cartograph: DeepWiki needs a public github.com remote; skipped')
   }
 } catch (err) {
-  console.error(`cartograph: ${err.message}`)
+  console.error(`cartograph: ${err instanceof Error ? err.message : String(err)}`)
   process.exit(2)
 }

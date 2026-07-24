@@ -1,19 +1,24 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 
-import { detectRepoSlug, loadConfig } from './config.mjs'
-import { fetchDeepwiki } from './deepwiki.mjs'
-import { resolveEntries } from './entries.mjs'
-import { extractRows } from './extract.mjs'
-import { buildFiles, renderWiki } from './render.mjs'
-import { loadTs } from './ts.mjs'
+import { detectRepoSlug, loadConfig, parseRemoteUrl } from './config'
+import { fetchDeepwiki } from './deepwiki'
+import { resolveEntries } from './entries'
+import { extractRows } from './extract'
+import { buildFiles, renderWiki } from './render'
+import { loadTs } from './ts'
+import type { AnalyzeOptions, AnalyzeResult, CartographConfig, CheckResult, Meta } from './types'
+
+export { parseRemoteUrl, detectRepoSlug } from './config'
+export { fetchDeepwiki } from './deepwiki'
+export type * from './types'
 
 const DEFAULT_ASK = [
   'What is the high-level architecture and what are the main components?',
   'How do the main components fit together in a typical request or data flow?',
 ]
 
-function describeSource(root, config) {
+function describeSource(root: string, config: CartographConfig): string {
   if (config.entries?.length) return 'entries from cartograph.config'
   if (['tsup.config.ts', 'tsup.config.js', 'tsup.config.mjs'].some((n) => existsSync(join(root, n)))) return 'tsup.config `entry`'
   const pkg = join(root, 'package.json')
@@ -28,14 +33,14 @@ function describeSource(root, config) {
 }
 
 /** Extract the surface + graph (+ optional DeepWiki) and build the output files. */
-export async function analyze(repoRoot, opts = {}) {
+export async function analyze(repoRoot: string, opts: AnalyzeOptions = {}): Promise<AnalyzeResult> {
   const root = resolve(repoRoot)
   const config = await loadConfig(root)
   const ts = await loadTs(root)
   const entries = resolveEntries(root, config, ts)
   const rows = extractRows(ts, root, entries, config)
   const slug = detectRepoSlug(root)
-  const meta = {
+  const meta: Meta = {
     out: opts.out ?? config.out ?? 'docs',
     title: config.title ?? slug?.repo ?? basename(root),
     sourceLabel: describeSource(root, config),
@@ -52,11 +57,14 @@ export async function analyze(repoRoot, opts = {}) {
 }
 
 /** Regenerate all files to disk. Cleans stale `api/*.md` first. */
-export async function write(repoRoot, opts = {}) {
+export async function write(
+  repoRoot: string,
+  opts: AnalyzeOptions = {},
+): Promise<AnalyzeResult & { written: string[] }> {
   const r = await analyze(repoRoot, opts)
   const apiDir = join(r.root, r.meta.out, 'api')
   if (existsSync(apiDir)) rmSync(apiDir, { recursive: true, force: true })
-  const written = []
+  const written: string[] = []
   for (const [rel, content] of r.files) {
     const abs = join(r.root, rel)
     mkdirSync(dirname(abs), { recursive: true })
@@ -77,10 +85,10 @@ export async function write(repoRoot, opts = {}) {
  * Forces DeepWiki off — the gate only ever inspects the deterministic surface,
  * so a `WIKI.md` (non-deterministic) never trips it.
  */
-export async function check(repoRoot, opts = {}) {
+export async function check(repoRoot: string, opts: AnalyzeOptions = {}): Promise<CheckResult> {
   const r = await analyze(repoRoot, { ...opts, deepwiki: false })
-  const stale = []
-  const missing = []
+  const stale: string[] = []
+  const missing: string[] = []
   for (const [rel, content] of r.files) {
     const abs = join(r.root, rel)
     if (!existsSync(abs)) missing.push(rel)

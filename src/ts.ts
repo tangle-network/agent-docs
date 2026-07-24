@@ -2,15 +2,16 @@ import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import type { TS } from './types'
+
 /**
  * Load the TypeScript compiler, preferring the TARGET repo's own copy (so the
  * extraction uses the same version the repo compiles with), then falling back
- * to cartograph's own if it happens to have one installed. TypeScript is a peer
- * dependency: every TS repo already has it, and cartograph carries no runtime
- * deps of its own.
+ * to cartograph's own if present. TypeScript is a peer dependency: every TS
+ * repo already has it, and cartograph carries no runtime deps of its own.
  */
-export async function loadTs(repoRoot) {
-  const candidates = []
+export async function loadTs(repoRoot: string): Promise<TS> {
+  const candidates: string[] = []
   try {
     candidates.push(createRequire(join(repoRoot, 'package.json')).resolve('typescript'))
   } catch {
@@ -24,7 +25,7 @@ export async function loadTs(repoRoot) {
   for (const path of candidates) {
     try {
       const mod = await import(pathToFileURL(path).href)
-      return mod.default ?? mod
+      return (mod.default ?? mod) as TS
     } catch {
       /* try the next candidate */
     }

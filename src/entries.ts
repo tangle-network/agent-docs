@@ -1,18 +1,16 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 
+import type { CartographConfig, Entry, TS } from './types'
+
 /**
  * Resolve the repo's public entry points, in priority order:
- *   1. `config.entries`   — explicit override (always wins)
- *   2. `tsup.config.ts`   — the build's `entry` map (accurate: points at src)
+ *   1. `config.entries`       — explicit override (always wins)
+ *   2. `tsup.config.ts`       — the build's `entry` map (accurate: points at src)
  *   3. package.json `exports` — reverse-mapped from dist → src
- *   4. `src/index.ts` / `index.ts` — single-entry fallback
- *
- * Returns `Entry[]`: `{ id, exportPath, file, apiName, topDir, srcDir, rel }`.
- * `id`/`exportPath` are the public subpath (`.` for the root); `topDir` is the
- * first path segment under the source root, used for the sibling-import graph.
+ *   4. `src/index.ts`         — single-entry fallback
  */
-export function resolveEntries(repoRoot, config = {}, ts) {
+export function resolveEntries(repoRoot: string, config: CartographConfig, ts: TS | undefined): Entry[] {
   const srcRoot = join(repoRoot, config.srcDir ?? 'src')
   const rels =
     (config.entries && config.entries.length ? config.entries : null) ??
@@ -24,8 +22,8 @@ export function resolveEntries(repoRoot, config = {}, ts) {
       'cartograph: no entry points detected. Add a cartograph.config.json with { "entries": ["src/index.ts", ...] }.',
     )
   }
-  const seen = new Set()
-  const entries = []
+  const seen = new Set<string>()
+  const entries: Entry[] = []
   for (const rel of rels) {
     const abs = join(repoRoot, rel)
     if (seen.has(abs)) continue
@@ -36,7 +34,7 @@ export function resolveEntries(repoRoot, config = {}, ts) {
   return entries.sort((a, b) => a.exportPath.localeCompare(b.exportPath))
 }
 
-function toEntry(repoRoot, abs, srcRoot, rel) {
+function toEntry(repoRoot: string, abs: string, srcRoot: string, rel: string): Entry {
   const underSrc = abs === srcRoot || abs.startsWith(srcRoot + '/')
   const key = (underSrc ? relative(srcRoot, abs) : relative(repoRoot, abs)).replace(/\.[tj]sx?$/, '')
   const id = key === 'index' ? '.' : key.replace(/\/index$/, '')
@@ -47,15 +45,15 @@ function toEntry(repoRoot, abs, srcRoot, rel) {
 }
 
 /** Parse the `entry` map out of tsup.config.{ts,js} (object or array form). */
-function fromTsup(repoRoot, ts) {
+function fromTsup(repoRoot: string, ts: TS | undefined): string[] | null {
   if (!ts) return null
   const configPath = ['tsup.config.ts', 'tsup.config.js', 'tsup.config.mjs']
     .map((n) => join(repoRoot, n))
     .find((p) => existsSync(p))
   if (!configPath) return null
   const sf = ts.createSourceFile(configPath, readFileSync(configPath, 'utf8'), ts.ScriptTarget.Latest, true)
-  let init
-  const visit = (node) => {
+  let init: import('typescript').Expression | undefined
+  const visit = (node: import('typescript').Node): void => {
     if (
       ts.isPropertyAssignment(node) &&
       (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&
@@ -68,7 +66,7 @@ function fromTsup(repoRoot, ts) {
   }
   visit(sf)
   if (!init) return null
-  const files = []
+  const files: string[] = []
   if (ts.isObjectLiteralExpression(init)) {
     for (const prop of init.properties) {
       if (ts.isPropertyAssignment(prop) && ts.isStringLiteral(prop.initializer)) files.push(prop.initializer.text)
@@ -80,10 +78,10 @@ function fromTsup(repoRoot, ts) {
 }
 
 /** Reverse-map each package.json `exports` subpath's dist target → a src file. */
-function fromPackageExports(repoRoot) {
+function fromPackageExports(repoRoot: string): string[] | null {
   const pkgPath = join(repoRoot, 'package.json')
   if (!existsSync(pkgPath)) return null
-  let pkg
+  let pkg: { exports?: Record<string, unknown> }
   try {
     pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
   } catch {
@@ -91,11 +89,18 @@ function fromPackageExports(repoRoot) {
   }
   const exp = pkg.exports
   if (!exp || typeof exp !== 'object') return null
-  const files = []
+  const files: string[] = []
   for (const [sub, val] of Object.entries(exp)) {
     if (sub.includes('*') || sub.endsWith('package.json') || /\.(css|json)$/.test(sub)) continue
     const target =
-      typeof val === 'string' ? val : val && typeof val === 'object' ? (val.types ?? val.import ?? val.default ?? val.require) : undefined
+      typeof val === 'string'
+        ? val
+        : val && typeof val === 'object'
+          ? ((val as Record<string, unknown>).types ??
+            (val as Record<string, unknown>).import ??
+            (val as Record<string, unknown>).default ??
+            (val as Record<string, unknown>).require)
+          : undefined
     if (typeof target !== 'string') continue
     const src = distToSrc(target)
     if (src && existsSync(join(repoRoot, src))) files.push(src)
@@ -104,14 +109,14 @@ function fromPackageExports(repoRoot) {
 }
 
 /** `./dist/chat-routes/index.js` → `src/chat-routes/index.ts` (best-effort). */
-function distToSrc(target) {
+function distToSrc(target: string): string {
   let s = target.replace(/^\.\//, '')
   s = s.replace(/^dist\//, 'src/')
-  s = s.replace(/\.d\.ts$/, '.ts').replace(/\.m?js$/, '.ts').replace(/\.d\.mts$/, '.ts')
+  s = s.replace(/\.d\.ts$/, '.ts').replace(/\.d\.mts$/, '.ts').replace(/\.m?js$/, '.ts')
   return s
 }
 
-function fromDefault(repoRoot) {
+function fromDefault(repoRoot: string): string[] | null {
   for (const rel of ['src/index.ts', 'src/index.tsx', 'index.ts', 'src/index.mts']) {
     if (existsSync(join(repoRoot, rel))) return [rel]
   }

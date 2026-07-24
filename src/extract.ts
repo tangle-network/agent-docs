@@ -1,10 +1,14 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
+import type * as TSNS from 'typescript'
+
+import type { CartographConfig, Entry, ExportInfo, ExportKind, Row, TS } from './types'
+
 /** One TS program over every entry file, reusing the repo's tsconfig options. */
-export function createProgram(ts, repoRoot, entries, tsconfigName = 'tsconfig.json') {
+export function createProgram(ts: TS, repoRoot: string, entries: Entry[], tsconfigName = 'tsconfig.json'): TSNS.Program {
   const tsconfigPath = join(repoRoot, tsconfigName)
-  let options = { allowJs: true }
+  let options: TSNS.CompilerOptions = { allowJs: true }
   if (existsSync(tsconfigPath)) {
     const cfg = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
     const parsed = ts.parseJsonConfigFileContent(cfg.config ?? {}, ts.sys, repoRoot)
@@ -17,9 +21,9 @@ export function createProgram(ts, repoRoot, entries, tsconfigName = 'tsconfig.js
   )
 }
 
-const truncate = (s, n) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s)
+const truncate = (s: string, n: number): string => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s)
 
-function firstSentence(text) {
+function firstSentence(text: string): string {
   const flat = text.replace(/\s+/g, ' ').trim()
   if (!flat) return ''
   const m = flat.match(/^(.*?[.!?])(\s|$)/)
@@ -27,7 +31,7 @@ function firstSentence(text) {
 }
 
 /** Kind + one-line signature + first-sentence doc for one exported symbol. */
-function describe(ts, checker, exported) {
+function describe(ts: TS, checker: TSNS.TypeChecker, exported: TSNS.Symbol): ExportInfo {
   let sym = exported
   if (sym.flags & ts.SymbolFlags.Alias) {
     try {
@@ -39,8 +43,8 @@ function describe(ts, checker, exported) {
   const name = exported.getName()
   const decl = sym.valueDeclaration ?? sym.declarations?.[0]
   const f = sym.flags
-  let kind
-  let signature
+  let kind: ExportKind
+  let signature: string
   if (f & ts.SymbolFlags.Class) {
     kind = 'class'
     signature = `class ${name}`
@@ -71,7 +75,12 @@ function describe(ts, checker, exported) {
 }
 
 /** Public exports of one entry module, sorted, skipping synthetic `__` names. */
-function exportsOf(ts, program, checker, entry) {
+function exportsOf(
+  ts: TS,
+  program: TSNS.Program,
+  checker: TSNS.TypeChecker,
+  entry: Entry,
+): { exports?: ExportInfo[]; error?: string } {
   const sf = program.getSourceFile(entry.file)
   if (!sf) return { error: `no source file for ${entry.rel}` }
   const moduleSym = checker.getSymbolAtLocation(sf)
@@ -84,7 +93,7 @@ function exportsOf(ts, program, checker, entry) {
   return { exports }
 }
 
-const walk = (dir) =>
+const walk = (dir: string): string[] =>
   existsSync(dir)
     ? readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const p = join(dir, e.name)
@@ -95,8 +104,8 @@ const walk = (dir) =>
 
 /** Sibling subpaths this entry imports, via relative specifiers resolving under
  *  `srcRoot` to a different top-level segment that is itself an entry's topDir. */
-function siblingDeps(entry, srcRoot, topDirs) {
-  const deps = new Set()
+function siblingDeps(entry: Entry, srcRoot: string, topDirs: Set<string>): string[] {
+  const deps = new Set<string>()
   for (const file of walk(entry.srcDir)) {
     const text = readFileSync(file, 'utf8')
     for (const m of text.matchAll(/(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g)) {
@@ -110,7 +119,7 @@ function siblingDeps(entry, srcRoot, topDirs) {
 }
 
 /** `Row[]`: `{ entry, exports, error, deps }` — the full surface + graph. */
-export function extractRows(ts, repoRoot, entries, config = {}) {
+export function extractRows(ts: TS, repoRoot: string, entries: Entry[], config: CartographConfig = {}): Row[] {
   const srcRoot = join(repoRoot, config.srcDir ?? 'src')
   const topDirs = new Set(entries.map((e) => e.topDir))
   const program = createProgram(ts, repoRoot, entries, config.tsconfig)

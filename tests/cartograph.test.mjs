@@ -4,8 +4,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 
-import { parseRemoteUrl } from '../src/config.mjs'
-import { analyze, check, write } from '../src/index.mjs'
+import { analyze, check, parseRemoteUrl, write } from '../dist/index.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const FIXTURE = join(HERE, 'fixture')
