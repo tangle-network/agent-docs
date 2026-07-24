@@ -44,7 +44,7 @@ test('analyze detects both exports entries, their exports, and the dep edge', as
 })
 
 test('write then --check round-trips clean; a hand-edit trips the gate', async () => {
-  const out = '.cartograph-test'
+  const out = '.agent-docs-test'
   try {
     await write(FIXTURE, { out })
     const fresh = await check(FIXTURE, { out })

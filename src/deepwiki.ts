@@ -6,7 +6,7 @@ import type { DeepwikiResult } from './types'
  * read_wiki_contents, ask_question. Entirely best-effort: any failure (repo not
  * indexed, network, protocol drift) resolves to null so the deterministic core
  * is never blocked. This is the ONLY non-deterministic, network, LLM-touching
- * part of cartograph, and it is opt-in.
+ * part of agent-docs, and it is opt-in.
  */
 
 const ENDPOINT = 'https://mcp.deepwiki.com/mcp'
@@ -92,7 +92,7 @@ export async function fetchDeepwiki(
         params: {
           protocolVersion: PROTOCOL,
           capabilities: {},
-          clientInfo: { name: 'cartograph', version: '0.1.0' },
+          clientInfo: { name: 'agent-docs', version: '0.1.0' },
         },
       },
       undefined,

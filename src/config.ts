@@ -6,19 +6,19 @@ import { pathToFileURL } from 'node:url'
 import type { CartographConfig, RepoSlug } from './types'
 
 /**
- * Optional per-repo config. All fields optional — cartograph auto-detects
+ * Optional per-repo config. All fields optional — agent-docs auto-detects
  * everything by default; the config is the escape hatch for repos whose entry
  * points can't be inferred from tsup / package.json `exports`.
  */
 export async function loadConfig(repoRoot: string): Promise<CartographConfig> {
-  for (const name of ['cartograph.config.mjs', 'cartograph.config.js']) {
+  for (const name of ['agent-docs.config.mjs', 'agent-docs.config.js']) {
     const p = join(repoRoot, name)
     if (existsSync(p)) {
       const mod = await import(pathToFileURL(p).href)
       return (mod.default ?? mod.config ?? {}) as CartographConfig
     }
   }
-  const jsonPath = join(repoRoot, 'cartograph.config.json')
+  const jsonPath = join(repoRoot, 'agent-docs.config.json')
   if (existsSync(jsonPath)) return JSON.parse(readFileSync(jsonPath, 'utf8')) as CartographConfig
   return {}
 }

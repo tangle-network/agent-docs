@@ -19,7 +19,7 @@ export function resolveEntries(repoRoot: string, config: CartographConfig, ts: T
     fromDefault(repoRoot)
   if (!rels || rels.length === 0) {
     throw new Error(
-      'cartograph: no entry points detected. Add a cartograph.config.json with { "entries": ["src/index.ts", ...] }.',
+      'agent-docs: no entry points detected. Add a agent-docs.config.json with { "entries": ["src/index.ts", ...] }.',
     )
   }
   const seen = new Set<string>()

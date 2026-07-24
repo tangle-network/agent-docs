@@ -7,8 +7,8 @@ import type { TS } from './types'
 /**
  * Load the TypeScript compiler, preferring the TARGET repo's own copy (so the
  * extraction uses the same version the repo compiles with), then falling back
- * to cartograph's own if present. TypeScript is a peer dependency: every TS
- * repo already has it, and cartograph carries no runtime deps of its own.
+ * to agent-docs's own if present. TypeScript is a peer dependency: every TS
+ * repo already has it, and agent-docs carries no runtime deps of its own.
  */
 export async function loadTs(repoRoot: string): Promise<TS> {
   const candidates: string[] = []
@@ -20,7 +20,7 @@ export async function loadTs(repoRoot: string): Promise<TS> {
   try {
     candidates.push(createRequire(import.meta.url).resolve('typescript'))
   } catch {
-    /* cartograph has no typescript installed either */
+    /* agent-docs has no typescript installed either */
   }
   for (const path of candidates) {
     try {
@@ -31,6 +31,6 @@ export async function loadTs(repoRoot: string): Promise<TS> {
     }
   }
   throw new Error(
-    "could not load 'typescript'. Run cartograph inside a repo that has typescript installed (it's a peer dependency).",
+    "could not load 'typescript'. Run agent-docs inside a repo that has typescript installed (it's a peer dependency).",
   )
 }

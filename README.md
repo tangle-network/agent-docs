@@ -1,4 +1,4 @@
-# cartograph
+# agent-docs
 
 A deterministic **repo surface + dependency map** for any TypeScript package, with an optional **DeepWiki** narrative augment for public repos.
 
@@ -6,7 +6,7 @@ It answers "what does this package actually export, and how do its parts depend 
 
 ## Why
 
-Hand-maintained "modules" tables and architecture docs lie the moment code moves. The mature fix (Microsoft's api-extractor "api-report", docs-as-tests) is to generate the surface from source and fail CI when the committed copy is stale. cartograph is that pattern, shaped for **multi-entry packages** (a `exports` menu with many subpaths) and **agent readability** — it emits the real dependency graph between subpaths, not just a symbol list, and a machine-readable JSON alongside the markdown.
+Hand-maintained "modules" tables and architecture docs lie the moment code moves. The mature fix (Microsoft's api-extractor "api-report", docs-as-tests) is to generate the surface from source and fail CI when the committed copy is stale. agent-docs is that pattern, shaped for **multi-entry packages** (a `exports` menu with many subpaths) and **agent readability** — it emits the real dependency graph between subpaths, not just a symbol list, and a machine-readable JSON alongside the markdown.
 
 ## Two layers
 
@@ -21,35 +21,35 @@ The split is deliberate: an LLM must never write the artifact CI depends on. The
 
 ```bash
 # regenerate the deterministic map (docs/CODEMAP.md + docs/api/*.md + docs/codemap.json)
-npx @tangle-network/cartograph
+npx @tangle-network/agent-docs
 
 # CI gate — exit 1 if the committed map is stale
-npx @tangle-network/cartograph --check
+npx @tangle-network/agent-docs --check
 
 # also write docs/WIKI.md from DeepWiki (public GitHub repos only)
-npx @tangle-network/cartograph --deepwiki
+npx @tangle-network/agent-docs --deepwiki
 
 # options
-npx @tangle-network/cartograph --repo path/to/repo --out docs
+npx @tangle-network/agent-docs --repo path/to/repo --out docs
 ```
 
 Wire the gate into CI (it needs only the `typescript` the repo already has):
 
 ```yaml
-- run: npx @tangle-network/cartograph --check
+- run: npx @tangle-network/agent-docs --check
 ```
 
 ## Entry-point detection
 
 Auto-detected, in priority order — no config needed for the common cases:
 
-1. `cartograph.config.{mjs,json}` — explicit `entries` override
+1. `agent-docs.config.{mjs,json}` — explicit `entries` override
 2. `tsup.config.ts` `entry` map
 3. `package.json` `exports` (reverse-mapped from `dist` → `src`)
 4. `src/index.ts`
 
 ```js
-// cartograph.config.mjs (only if auto-detection misses)
+// agent-docs.config.mjs (only if auto-detection misses)
 export default {
   entries: ['src/index.ts', 'src/server/index.ts'],
   out: 'docs',
@@ -64,7 +64,7 @@ export default {
 
 ## Requirements
 
-Node ≥ 20, and `typescript` resolvable from the target repo (it's a peer dependency — every TS repo has it). cartograph carries no runtime dependencies of its own.
+Node ≥ 20, and `typescript` resolvable from the target repo (it's a peer dependency — every TS repo has it). agent-docs carries no runtime dependencies of its own.
 
 ## License
 

@@ -19,7 +19,7 @@ const DEFAULT_ASK = [
 ]
 
 function describeSource(root: string, config: CartographConfig): string {
-  if (config.entries?.length) return 'entries from cartograph.config'
+  if (config.entries?.length) return 'entries from agent-docs.config'
   if (['tsup.config.ts', 'tsup.config.js', 'tsup.config.mjs'].some((n) => existsSync(join(root, n)))) return 'tsup.config `entry`'
   const pkg = join(root, 'package.json')
   if (existsSync(pkg)) {

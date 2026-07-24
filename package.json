@@ -1,10 +1,10 @@
 {
-  "name": "@tangle-network/cartograph",
+  "name": "@tangle-network/agent-docs",
   "version": "0.1.0",
   "description": "Deterministic repo surface + dependency map for any TypeScript package, with an optional DeepWiki narrative augment for public repos.",
   "type": "module",
   "bin": {
-    "cartograph": "dist/cli.js"
+    "agent-docs": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -40,6 +40,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tangle-network/cartograph.git"
+    "url": "git+https://github.com/tangle-network/agent-docs.git"
   }
 }
