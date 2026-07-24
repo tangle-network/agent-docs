@@ -1,6 +1,6 @@
 {
   "name": "@tangle-network/agent-docs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Deterministic repo surface + dependency map for any TypeScript package, with an optional DeepWiki narrative augment for public repos.",
   "type": "module",
   "publishConfig": {
@@ -30,7 +30,9 @@
     "typescript": ">=5.0.0"
   },
   "peerDependenciesMeta": {
-    "typescript": { "optional": false }
+    "typescript": {
+      "optional": false
+    }
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

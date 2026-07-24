@@ -11,6 +11,8 @@ import type { AnalyzeOptions, AnalyzeResult, CartographConfig, CheckResult, Meta
 
 export { parseRemoteUrl, detectRepoSlug } from './config'
 export { fetchDeepwiki } from './deepwiki'
+export { suggest } from './suggest'
+export type { SuggestOptions, SuggestResult } from './suggest'
 export type * from './types'
 
 const DEFAULT_ASK = [

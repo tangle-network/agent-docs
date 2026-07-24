@@ -65,6 +65,20 @@ export default {
 - **Private repos:** the deterministic core runs fully offline — no network, no LLM, no external service. This is the whole tool for a private repo.
 - **Public repos:** add `--deepwiki` to pull the free, no-auth DeepWiki wiki + Q&A for the repo. If the repo isn't indexed yet, the augment is skipped and the deterministic map is unaffected. (Index a public repo once at `deepwiki.com/<owner>/<repo>`.)
 
+## Filling the JSDoc gap (`suggest`)
+
+The `llms.txt` / API pages are only as rich as your JSDoc — and most codebases leave the majority of exports undocumented. `agent-docs suggest` closes that gap with a cheap model, **at authoring time**:
+
+```bash
+export TANGLE_API_KEY=...   # any OpenAI-compatible endpoint via ROUTER_URL (default: Tangle router)
+agent-docs suggest --subpath chat-routes   # draft JSDoc for undocumented exports, write into source
+agent-docs suggest --dry-run               # draft + print, write nothing
+```
+
+It finds every exported declaration that has no JSDoc, drafts a one-line summary from the signature + source, and inserts it above the declaration. Review the diff, commit, then re-run `agent-docs` — the new comments flow into the gated `llms.txt` **deterministically**.
+
+This is the tool's only LLM path, and it is deliberately at authoring time, not generation time: the model improves your **source comments**; the generated docs stay type-derived and never contain raw model text, so `--check` keeps working. Defaults to `gpt-4.1-mini` via the Tangle router; override with `--model`.
+
 ## Requirements
 
 Node ≥ 20, and `typescript` resolvable from the target repo (it's a peer dependency — every TS repo has it). agent-docs carries no runtime dependencies of its own.
