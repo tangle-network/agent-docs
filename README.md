@@ -13,7 +13,10 @@ Hand-maintained "modules" tables and architecture docs lie the moment code moves
 | Layer | Source | Deterministic? | Gated by `--check`? |
 |---|---|---|---|
 | **Code map + API** (`CODEMAP.md`, `api/*.md`, `codemap.json`) | The TypeScript compiler walking real exports + the import graph | Yes | **Yes** |
+| **Agent-readable surface** (`llms.txt`, `llms-full.txt`) | Same extraction, emitted in the [llms.txt](https://llmstxt.org) format | Yes | **Yes** |
 | **Architecture wiki** (`WIKI.md`) | DeepWiki's MCP (`read_wiki_structure` / `ask_question`) | No (LLM prose) | **Never** |
+
+The `llms.txt` files are the differentiator: an agent-readable index (consumable by GitMCP, Context7, Cursor, Claude) that is **type-derived**, so it can't rot — `--check` fails when it diverges from the real exports. Every `llms.txt` generator in the wild is hand-written or crawl-inferred and drifts silently; this one is gated. (It is not a search/SEO artifact — Google doesn't consume llms.txt — its value is coding agents pulling it.)
 
 The split is deliberate: an LLM must never write the artifact CI depends on. The deterministic files are the contract; `WIKI.md` is a reading aid.
 

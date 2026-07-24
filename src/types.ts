@@ -67,6 +67,8 @@ export interface DeepwikiResult {
 export interface Meta {
   out: string
   title: string
+  /** One-line purpose (from package.json `description`), for the llms.txt blockquote. */
+  description?: string
   sourceLabel: string
   slug?: string
   deepwiki?: DeepwikiResult

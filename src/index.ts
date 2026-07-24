@@ -18,6 +18,17 @@ const DEFAULT_ASK = [
   'How do the main components fit together in a typical request or data flow?',
 ]
 
+function readPackageDescription(root: string): string | undefined {
+  const pkg = join(root, 'package.json')
+  if (!existsSync(pkg)) return undefined
+  try {
+    const d = JSON.parse(readFileSync(pkg, 'utf8')).description
+    return typeof d === 'string' && d ? d : undefined
+  } catch {
+    return undefined
+  }
+}
+
 function describeSource(root: string, config: CartographConfig): string {
   if (config.entries?.length) return 'entries from agent-docs.config'
   if (['tsup.config.ts', 'tsup.config.js', 'tsup.config.mjs'].some((n) => existsSync(join(root, n)))) return 'tsup.config `entry`'
@@ -43,6 +54,7 @@ export async function analyze(repoRoot: string, opts: AnalyzeOptions = {}): Prom
   const meta: Meta = {
     out: opts.out ?? config.out ?? 'docs',
     title: config.title ?? slug?.repo ?? basename(root),
+    description: readPackageDescription(root),
     sourceLabel: describeSource(root, config),
     slug: slug?.slug,
   }
