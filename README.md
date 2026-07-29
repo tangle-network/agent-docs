@@ -81,7 +81,7 @@ This is the tool's only LLM path, and it is deliberately at authoring time, not 
 
 ## Requirements
 
-Node ≥ 20, and `typescript` resolvable from the target repo (it's a peer dependency — every TS repo has it). agent-docs carries no runtime dependencies of its own.
+Node ≥ 20. `agent-docs` carries Microsoft's TypeScript 6 compatibility API, so it works when the target repo uses TypeScript 7 without requiring compiler internals from that repo.
 
 ## License
 

@@ -52,8 +52,8 @@ function fromTsup(repoRoot: string, ts: TS | undefined): string[] | null {
     .find((p) => existsSync(p))
   if (!configPath) return null
   const sf = ts.createSourceFile(configPath, readFileSync(configPath, 'utf8'), ts.ScriptTarget.Latest, true)
-  let init: import('typescript').Expression | undefined
-  const visit = (node: import('typescript').Node): void => {
+  let init: import('@typescript/typescript6').Expression | undefined
+  const visit = (node: import('@typescript/typescript6').Node): void => {
     if (
       ts.isPropertyAssignment(node) &&
       (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) &&

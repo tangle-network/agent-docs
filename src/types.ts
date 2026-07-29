@@ -1,5 +1,5 @@
-/** The TypeScript compiler module, loaded from the target repo at runtime. */
-export type TS = typeof import('typescript')
+/** The TypeScript compiler API used for source extraction. */
+export type TS = typeof import('@typescript/typescript6')
 
 export interface Entry {
   /** Public subpath id: `.` for the root, else e.g. `chat-routes`. */
