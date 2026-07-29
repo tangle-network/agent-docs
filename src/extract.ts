@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
-import type * as TSNS from 'typescript'
+import type * as TSNS from '@typescript/typescript6'
 
 import type { CartographConfig, Entry, ExportInfo, ExportKind, Row, TS } from './types'
 

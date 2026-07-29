@@ -49,7 +49,7 @@ function describeSource(root: string, config: CartographConfig): string {
 export async function analyze(repoRoot: string, opts: AnalyzeOptions = {}): Promise<AnalyzeResult> {
   const root = resolve(repoRoot)
   const config = await loadConfig(root)
-  const ts = await loadTs(root)
+  const ts = loadTs()
   const entries = resolveEntries(root, config, ts)
   const rows = extractRows(ts, root, entries, config)
   const slug = detectRepoSlug(root)

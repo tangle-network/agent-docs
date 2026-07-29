@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { rmSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
@@ -41,6 +42,26 @@ test('analyze detects both exports entries, their exports, and the dep edge', as
 
   // root re-exports/imports from util → a recorded sibling dependency edge.
   assert.ok(root.deps.includes('util'), `expected root to depend on util, got ${JSON.stringify(root.deps)}`)
+})
+
+test('analyze does not require a compiler API from the target project', async () => {
+  const target = mkdtempSync(join(tmpdir(), 'agent-docs-typescript7-'))
+  try {
+    cpSync(FIXTURE, target, { recursive: true })
+    const targetTypescript = join(target, 'node_modules', 'typescript')
+    mkdirSync(targetTypescript, { recursive: true })
+    writeFileSync(
+      join(targetTypescript, 'package.json'),
+      JSON.stringify({ name: 'typescript', version: '7.0.2', type: 'module', exports: './index.js' }),
+    )
+    writeFileSync(join(targetTypescript, 'index.js'), "export default { version: '7.0.2' }\n")
+
+    const { rows } = await analyze(target)
+    assert.equal(rows.length, 2)
+    assert.ok(rows.some((row) => row.exports.some((entry) => entry.name === 'makeWidget')))
+  } finally {
+    rmSync(target, { recursive: true, force: true })
+  }
 })
 
 test('write then --check round-trips clean; a hand-edit trips the gate', async () => {

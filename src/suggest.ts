@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import type * as TSNS from 'typescript'
+import type * as TSNS from '@typescript/typescript6'
 
 import { loadConfig } from './config'
 import { resolveEntries } from './entries'
@@ -176,7 +176,7 @@ export async function suggest(repoRoot: string, opts: SuggestOptions = {}): Prom
   const cfg = modelConfig(opts)
   const log = opts.log ?? (() => {})
   const config = await loadConfig(root)
-  const ts = await loadTs(root)
+  const ts = loadTs()
   const entries = resolveEntries(root, config, ts)
   let candidates = collectCandidates(ts, root, entries, opts.subpath)
   if (opts.limit) candidates = candidates.slice(0, opts.limit)

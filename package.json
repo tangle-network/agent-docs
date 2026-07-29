@@ -1,6 +1,6 @@
 {
   "name": "@tangle-network/agent-docs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Deterministic repo surface + dependency map for any TypeScript package, with an optional DeepWiki narrative augment for public repos.",
   "type": "module",
   "publishConfig": {
@@ -20,24 +20,19 @@
     "dist",
     "README.md"
   ],
+  "dependencies": {
+    "@typescript/typescript6": "6.0.2"
+  },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "tsup && node --test 'tests/*.test.mjs'",
     "prepublishOnly": "tsup"
   },
-  "peerDependencies": {
-    "typescript": ">=5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": false
-    }
-  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^6.0.0"
   },
   "engines": {
     "node": ">=20"

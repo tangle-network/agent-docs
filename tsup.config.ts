@@ -10,6 +10,6 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: false,
-  // `typescript` is a peer, loaded from the target repo at runtime.
-  external: ['typescript'],
+  // Keep Microsoft's compatibility package as one shared runtime dependency.
+  external: ['@typescript/typescript6'],
 })
