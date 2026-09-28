@@ -24,15 +24,15 @@
     "@typescript/typescript6": "6.0.2"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "tsup && node --test 'tests/*.test.mjs'",
-    "prepublishOnly": "tsup"
+    "test": "tsdown && node --test 'tests/*.test.mjs'",
+    "prepublishOnly": "tsdown"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^6.0.0"
+    "@types/node": "^26.6.3",
+    "tsdown": "^0.23.0",
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=20"
